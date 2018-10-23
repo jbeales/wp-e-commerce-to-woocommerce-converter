@@ -17,6 +17,10 @@ if (!class_exists("ralc_wpec_to_woo")) {
     // just get the id of the first administrator in the database
     var $post_author;
 
+    // Set defaults for Shipping & Billing country
+    var $default_shipping_country = 'US';
+    var $default_billing_country = 'US';
+
     function ralc_wpec_to_woo() { } // constructor
     
     function plugin_menu() {
@@ -860,7 +864,12 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_post_meta( $post_id, '_billing_address_2', "" );
         update_post_meta( $post_id, '_billing_city', $userinfo['billingcity'] );
         update_post_meta( $post_id, '_billing_postcode', $userinfo['billingpostcode'] );
-        update_post_meta( $post_id, '_billing_country', $userinfo['billingcountry'] );
+        if( isset( $userinfo['billingcountry'])) {
+          update_post_meta( $post_id, '_billing_country', $userinfo['billingcountry'] );
+        } else {
+          update_post_meta( $post_id, '_billing_country', $this->default_billing_country );
+        }
+        
         update_post_meta( $post_id, '_billing_email', $userinfo['billingemail'] );
         update_post_meta( $post_id, '_billing_phone', $userinfo['billingphone'] );                
 
@@ -872,7 +881,11 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_post_meta( $post_id, '_shipping_address_2', "" );
         update_post_meta( $post_id, '_shipping_city', $userinfo['shippingcity'] );
         update_post_meta( $post_id, '_shipping_postcode', $userinfo['shippingpostcode'] );
-        update_post_meta( $post_id, '_shipping_country', $userinfo['shippingcountry'] );
+        if(isset($userinfo['shippingcountry'])) {
+          update_post_meta( $post_id, '_shipping_country', $userinfo['shippingcountry'] );
+        } else {
+          update_post_meta( $post_id, '_shipping_country', $this->default_shipping_country );
+        }
         update_post_meta( $post_id, '_shipping_state', "" );
 
         /*
