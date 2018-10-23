@@ -287,7 +287,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
         <?php
     } // at_a_glance()
 
-    function conversion(){ 
+    public function conversion(){ 
     	global $wpdb;
       // just get the id of the first administrator in the database
     	$this->post_author = $wpdb->get_var( "SELECT ID FROM $wpdb->users;" );
@@ -300,7 +300,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // $this->delete_redundant_wpec_datbase_entries();         
     }// END: conversion
 
-    function show_log(){
+    public function show_log(){
 ?>
       <div id="log" class="metabox-holder">
         <div class="postbox">
