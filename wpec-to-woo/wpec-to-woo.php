@@ -479,7 +479,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // ______ OTHER PRODUCT DATA ______
       // sku code
       $sku = get_post_meta($post_id, '_wpsc_sku', true);
-      if( $sku == null ){
+      if( $sku == null && !empty($_wpsc_product_metadata['_wpsc_sku'])){
         // try the old name
         $sku = $_wpsc_product_metadata['_wpsc_sku'];
       }
