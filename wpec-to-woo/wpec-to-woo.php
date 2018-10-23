@@ -413,6 +413,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $featured_products = get_option('sticky_products', false);
 
       while ( $products->have_posts() ) : $products->the_post();
+        set_time_limit(120);
       $post_id = get_the_id();
       $count ++;
 
@@ -689,6 +690,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // loop through coupons            
       foreach ( (array)$coupon_data as $coupon ):  
 
+        set_time_limit(120);
+
       $post_title = sanitize_title( $coupon['coupon_code'] );
       // check to see if coupon has already been added
       $coupon_exists = $wpdb->get_var($wpdb->prepare("
@@ -805,6 +808,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
     public function delete_orders(){
       $mycustomposts = get_posts( array( 'post_type' => 'shop_order', 'posts_per_page' => 9999) );
       foreach( $mycustomposts as $mypost ){
+        set_time_limit(120);
         wp_delete_post( $mypost->ID, true);
       }
     }
@@ -817,6 +821,9 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
       $order_data = $wpdb->get_results( "SELECT * FROM `" . $wpec_order_table . "`", ARRAY_A );
       foreach ( (array)$order_data as $order ){
+        
+        set_time_limit(120);
+
         $post_title = "WPEC Order - " . $order['id'] . " - " . date( 'Y-m-d H:i:s', $order['date'] );
 
         // check to see if order has already been added
