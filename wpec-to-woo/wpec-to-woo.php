@@ -70,7 +70,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
           <input class="button-primary" type="submit" value="Convert My Store" />
         </form>
         <?php
-        if( $_POST['order'] == 'go_go_go' ){          
+        if( isset($_POST['order']) && $_POST['order'] == 'go_go_go' ){          
           $this->show_log();
         }
         ?>
