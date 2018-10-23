@@ -53,10 +53,10 @@ if (!class_exists("ralc_wpec_to_woo")) {
         <h2>Wp-e-commerce to woocommerce converter</h2>
         <p>Use at your own risk!, still working on it, only use it on a test version of your site. Read the help for more information.</p>         
         <?php
-        if( $_POST['delete_orders'] == 'yes' ){
+        if( isset($_POST['delete_orders']) && $_POST['delete_orders'] == 'yes' ){
           $this->delete_orders();
         }
-        if( $_POST['order'] == 'go_go_go' ){
+        if( isset($_POST['order']) && $_POST['order'] == 'go_go_go' ){
           $this->conversion();
         }
         $this->at_a_glance();
