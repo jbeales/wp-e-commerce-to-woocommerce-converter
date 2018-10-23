@@ -541,7 +541,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_option( 'woocommerce_weight_unit', $weight_unit );
 
         $dimensions_unit = "in";
-        if( !empty( $dimensions ) ) {
+        if( !empty( $dimensions ) && isset($dimensions['height_unit']) ) {
+
           $dimentions_unit = $dimensions['height_unit'];
 
           if( $dimentions_unit == "cm" || $dimentions_unit == "meter" ){
