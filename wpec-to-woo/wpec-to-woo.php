@@ -204,7 +204,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
                       <td class="b first"><a href="#">
                         <?php 
                         $wpec_products = wp_count_posts( 'wpsc-product' );
-                        echo number_format_i18n( $wpec_products->publish ); 
+                        echo number_format_i18n( isset( $wpec_products->publish ) ? $wpec_products->publish : 0 ); 
                         ?>
                       </a></td>
                       <td class="t"><a href="#">Products<a/></td>
