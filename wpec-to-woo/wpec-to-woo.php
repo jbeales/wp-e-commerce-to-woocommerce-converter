@@ -550,12 +550,14 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
 
         // featured?
-      if (in_array($post_id, $featured_products)) {
-        $featured = 'yes';
-      }else{
-        $featured = 'no';
-      }
-      update_post_meta($post_id, '_featured', $featured);            
+      if( is_array( $featured_products ) ) {
+        if (in_array($post_id, $featured_products)) {
+          $featured = 'yes';
+        }else{
+          $featured = 'no';
+        }
+        update_post_meta($post_id, '_featured', $featured);
+      }       
       // ______________________________
 
 
