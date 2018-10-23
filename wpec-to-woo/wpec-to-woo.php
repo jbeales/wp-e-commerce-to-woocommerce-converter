@@ -492,29 +492,35 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $tax_class = '';
       update_post_meta($post_id, '_tax_class', $sku);
 
-      // weight
-      $weight = $_wpsc_product_metadata['weight'];
+      if( isset( $_wpsc_product_metadata['weight'])) {
+        // weight
+        $weight = $_wpsc_product_metadata['weight'];
 
-      update_post_meta($post_id, '_weight', $weight);
+        update_post_meta($post_id, '_weight', $weight);
+      }
+
+
       /*
        * WPEC use to use ['_wpsc_dimensions'] but then changed to use ['dimensions']
        * some products may still have the old variable name
        */
-      $dimensions = $_wpsc_product_metadata['dimensions'];
-      if( $dimensions == null ){
-        // try the old name
-      	$dimensions = $_wpsc_product_metadata['_wpsc_dimensions'];
+      $dimensions = null;
+      if( isset( $_wpsc_product_metadata['dimensions'] ) ) {
+        $dimensions = $_wpsc_product_metadata['dimensions'];
+      } else if( isset( $_wpsc_product_metadata['_wpsc_dimensions'] )) {
+        $dimensions = $_wpsc_product_metadata['_wpsc_dimensions'];
       }
-      // height
-      $height = $dimensions['height'];
-      update_post_meta($post_id, '_height', $height);
-      //length
-      $length = $dimensions['length'];
-      update_post_meta($post_id, '_length', $length);
-      //width
-      $width = $dimensions['width'];
-      update_post_meta($post_id, '_width', $width);
-      
+      if( !empty($dimensions) ) {
+        // height
+        $height = $dimensions['height'];
+        update_post_meta($post_id, '_height', $height);
+        //length
+        $length = $dimensions['length'];
+        update_post_meta($post_id, '_length', $length);
+        //width
+        $width = $dimensions['width'];
+        update_post_meta($post_id, '_width', $width);
+      }
       /* woocommerce option update, weight unit and dimentions unit */
       if( $count == 1 ){
         /*
@@ -523,18 +529,22 @@ if (!class_exists("ralc_wpec_to_woo")) {
          * and just use those values for the global values used store wide in woocommerce
          */
         $weight_unit = $_wpsc_product_metadata['weight_unit'];
-        $dimentions_unit = $dimensions['height_unit'];
+
         if( $weight_unit == "pound" || $weight_unit == "ounce" || $weight_unit == "gram" ){
         	$weight_unit = "lbs";
         }else{
         	$weight_unit = "kg";
         }
-        if( $dimentions_unit == "cm" || $dimentions_unit == "meter" ){
-        	$dimentions_unit = "cm";
-        }else{
-        	$dimentions_unit = "in";
-        }
         update_option( 'woocommerce_weight_unit', $weight_unit );
+
+        $dimensions_unit = "in";
+        if( !empty( $dimensions ) ) {
+          $dimentions_unit = $dimensions['height_unit'];
+
+          if( $dimentions_unit == "cm" || $dimentions_unit == "meter" ){
+            $dimentions_unit = "cm";
+          }
+        }
         update_option( 'woocommerce_dimension_unit', $dimentions_unit );
       }
 
