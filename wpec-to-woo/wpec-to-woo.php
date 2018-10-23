@@ -21,9 +21,11 @@ if (!class_exists("ralc_wpec_to_woo")) {
     var $default_shipping_country = 'US';
     var $default_billing_country = 'US';
 
-    function ralc_wpec_to_woo() { } // constructor
+    public function __construct() { 
+      //
+    }
     
-    function plugin_menu() {
+    public function plugin_menu() {
       $page = add_submenu_page( 'tools.php', 'wpec to woo', 'wpec to woo', 'manage_options', 'wpec-to-woo', array( $this, 'plugin_options' ) );
       add_action( 'admin_print_styles-' . $page, array( $this, 'admin_styles' ) );
 
@@ -33,15 +35,15 @@ if (!class_exists("ralc_wpec_to_woo")) {
       get_current_screen( $page, $help );
     }// END: plugin_menu
     
-    function admin_styles() {
+    public function admin_styles() {
       wp_enqueue_style( 'wpec_to_woo_styles' );
     }
     
-    function admin_init() {
+    public function admin_init() {
       wp_register_style( 'wpec_to_woo_styles', plugins_url('styles.css', __FILE__) );
     }
 
-    function plugin_options() {
+    public function plugin_options() {
       if (!current_user_can('manage_options'))  {
         wp_die( __('You do not have sufficient permissions to access this page.') );
       }
@@ -76,7 +78,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       <?php
       } //END: plugin_options
         
-    function at_a_glance(){
+    public function at_a_glance(){
       global $wpdb; global $woocommerce;
       ?>
       <div id="glance" class="metabox-holder">
@@ -399,7 +401,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
      * convert post type to woocommerce post type
      * update price field meta
      */
-    function update_products(){
+    public function update_products(){
       $args = array( 
         'post_type' => $this->old_post_type, 
         'posts_per_page' => -1,
@@ -591,7 +593,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
     /*
      * update category
      */
-    function update_categories(){
+    public function update_categories(){
       global $wpdb;
 
       //$wpdb->show_errors(); 
@@ -619,7 +621,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $wpdb->flush();
     }// END: update_categories
         
-    function update_shop_settings(){
+    public function update_shop_settings(){
       global $wpdb;
       /*
        * were only going to update some straight forward options
@@ -673,7 +675,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     }  
 
-    function update_coupons(){
+    public function update_coupons(){
       global $wpdb;
        // get all coupons
       $wpec_coupon_table = $wpdb->prefix . 'wpsc_coupon_codes';
@@ -800,14 +802,14 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     }// END: update_coupons()
 
-    function delete_orders(){
+    public function delete_orders(){
       $mycustomposts = get_posts( array( 'post_type' => 'shop_order', 'posts_per_page' => 9999) );
       foreach( $mycustomposts as $mypost ){
         wp_delete_post( $mypost->ID, true);
       }
     }
     
-    function update_orders(){
+    public function update_orders(){
       global $wpdb;
       // loop through orders
       $wpec_order_table = $wpdb->prefix . 'wpsc_purchase_logs';
@@ -988,7 +990,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     }// END: update_orders()
         
-    function delete_redundant_wpec_datbase_entries(){
+    public function delete_redundant_wpec_datbase_entries(){
       global $wpdb;
       /* delete all wpec database entries */
       delete_post_meta($post_id, '_wpsc_price');
