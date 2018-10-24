@@ -861,6 +861,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
     
     public function update_orders(){
       global $wpdb;
+      
       // loop through orders
       $wpec_order_table = $wpdb->prefix . 'wpsc_purchase_logs';
       $wpec_formdata_table = $wpdb->prefix . 'wpsc_submited_form_data';
@@ -898,7 +899,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
         $post_id = wp_insert_post( $post, true );
 
         // wpec tables
-        $wpsc_cart_contents_table = $wpdb->prefix . 'wpsc_cart_contents';
         $wpsc_purchase_logs_table = $wpdb->prefix . 'wpsc_purchase_logs';
         $wpsc_submited_form_data_table = $wpdb->prefix . 'wpsc_submited_form_data';
         $wpsc_checkout_forms_table = $wpdb->prefix . 'wpsc_checkout_forms';
@@ -1013,13 +1013,14 @@ if (!class_exists("ralc_wpec_to_woo")) {
      * @return void
      */
     protected function update_order_items( $post_id, $wpec_order )  {
+        global $wpdb;
 
         /*
           ORDER ITEMS
         */
         $cartcontent = $wpdb->get_results("
           SELECT * 
-          FROM `" . $wpsc_cart_contents_table . "` 
+          FROM `{$wpdb->prefix}wpsc_cart_contents` 
           WHERE `purchaseid`=" . $wpec_order['id'] . "
           ");
 
