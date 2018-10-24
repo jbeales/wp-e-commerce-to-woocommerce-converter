@@ -24,6 +24,43 @@ if (!class_exists("ralc_wpec_to_woo")) {
     public function __construct() { 
       //
     }
+
+    protected function disable_emails() {
+      /**
+       * Hooks for sending emails during store events
+       * From: https://docs.woocommerce.com/document/unhookremove-woocommerce-emails/
+       **/
+      remove_action( 'woocommerce_low_stock_notification', array( $email_class, 'low_stock' ) );
+      remove_action( 'woocommerce_no_stock_notification', array( $email_class, 'no_stock' ) );
+      remove_action( 'woocommerce_product_on_backorder_notification', array( $email_class, 'backorder' ) );
+      
+      // New order emails
+      remove_action( 'woocommerce_order_status_pending_to_processing_notification', array( $email_class->emails['WC_Email_New_Order'], 'trigger' ) );
+      remove_action( 'woocommerce_order_status_pending_to_completed_notification', array( $email_class->emails['WC_Email_New_Order'], 'trigger' ) );
+      remove_action( 'woocommerce_order_status_pending_to_on-hold_notification', array( $email_class->emails['WC_Email_New_Order'], 'trigger' ) );
+      remove_action( 'woocommerce_order_status_failed_to_processing_notification', array( $email_class->emails['WC_Email_New_Order'], 'trigger' ) );
+      remove_action( 'woocommerce_order_status_failed_to_completed_notification', array( $email_class->emails['WC_Email_New_Order'], 'trigger' ) );
+      remove_action( 'woocommerce_order_status_failed_to_on-hold_notification', array( $email_class->emails['WC_Email_New_Order'], 'trigger' ) );
+      
+      // Processing order emails
+      remove_action( 'woocommerce_order_status_pending_to_processing_notification', array( $email_class->emails['WC_Email_Customer_Processing_Order'], 'trigger' ) );
+      remove_action( 'woocommerce_order_status_pending_to_on-hold_notification', array( $email_class->emails['WC_Email_Customer_Processing_Order'], 'trigger' ) );
+      
+      // Completed order emails
+      remove_action( 'woocommerce_order_status_completed_notification', array( $email_class->emails['WC_Email_Customer_Completed_Order'], 'trigger' ) );
+        
+      // Note emails
+      remove_action( 'woocommerce_new_customer_note_notification', array( $email_class->emails['WC_Email_Customer_Note'], 'trigger' ) );
+
+
+      // Turn off E-mails not included in the above, from wc-update-functions.php
+      remove_all_actions( 'woocommerce_order_status_refunded_notification' );
+      remove_all_actions( 'woocommerce_order_partially_refunded_notification' );
+      remove_action( 'woocommerce_order_status_refunded', array( 'WC_Emails', 'send_transactional_email' ) );
+      remove_action( 'woocommerce_order_partially_refunded', array( 'WC_Emails', 'send_transactional_email' ) );
+
+
+    }
     
     public function plugin_menu() {
       $page = add_submenu_page( 'tools.php', 'wpec to woo', 'wpec to woo', 'manage_options', 'wpec-to-woo', array( $this, 'plugin_options' ) );
@@ -293,6 +330,10 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     public function conversion(){ 
     	global $wpdb;
+
+      // Don't send E-mail by accident while converting. 
+      // We don't want customers getting a bunch of E-mails!
+      $this->disable_emails();
       // just get the id of the first administrator in the database
     	$this->post_author = $wpdb->get_var( "SELECT ID FROM $wpdb->users;" );
     	$this->update_shop_settings();          
