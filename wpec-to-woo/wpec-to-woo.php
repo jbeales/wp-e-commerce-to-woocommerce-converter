@@ -955,33 +955,9 @@ if (!class_exists("ralc_wpec_to_woo")) {
         }
         update_post_meta( $post_id, '_shipping_state', "" );
 
-        /*
-          ORDER ITEMS
-        */
-        $cartcontent = $wpdb->get_results("
-          SELECT * 
-          FROM `" . $wpsc_cart_contents_table . "` 
-          WHERE `purchaseid`=" . $order['id'] . "
-          ");
-        foreach($cartcontent as $item){
 
-          $item_id = wc_add_order_item( $post_id, array(
-            'order_item_name' 		=> $item->name,
-            'order_item_type' 		=> 'line_item'
-            ) );
-
-          if ( $item_id ) {
-            wc_add_order_item_meta( $item_id, '_qty', $item->quantity );
-            wc_add_order_item_meta( $item_id, '_product_id', $item->prodid );
-            wc_add_order_item_meta( $item_id, '_variation_id', null );
-            $subtotal = $item->quantity * $item->price;
-            wc_add_order_item_meta( $item_id, '_line_subtotal', $subtotal );
-            wc_add_order_item_meta( $item_id, '_line_subtotal_tax', $subtotal+$item->tax_charged );
-            wc_add_order_item_meta( $item_id, '_line_total', $subtotal+$item->tax_charged );
-            wc_add_order_item_meta( $item_id, '_line_tax', $item->tax_charged );
-          }
-        }
-
+        $this->update_order_items( $post_id, $order );
+        
 
         /*
           ORDER DATA
@@ -1021,6 +997,57 @@ if (!class_exists("ralc_wpec_to_woo")) {
         }
 
     }// END: update_orders()
+
+    protected function update_order_meta( $post_id, $wpec_order ) {
+
+
+      //update_post_meta( $post_id, )
+
+    }
+
+    /**
+     * Add items from the WPeC order to the new WooCommerce order.
+     *   
+     * @param  int $post_id      The post ID 'shop_order' CPT that's the new Woo order.
+     * @param  array $wpec_order Corresponds to a row in the WPeC purchaselogs table.
+     * @return void
+     */
+    protected function update_order_items( $post_id, $wpec_order )  {
+
+        /*
+          ORDER ITEMS
+        */
+        $cartcontent = $wpdb->get_results("
+          SELECT * 
+          FROM `" . $wpsc_cart_contents_table . "` 
+          WHERE `purchaseid`=" . $wpec_order['id'] . "
+          ");
+
+        foreach($cartcontent as $item){
+
+          $item_id = wc_add_order_item( $post_id, array(
+            'order_item_name'     => $item->name,
+            'order_item_type'     => 'line_item'
+            ) );
+
+          if ( $item_id ) {
+            wc_add_order_item_meta( $item_id, '_qty', $item->quantity );
+            wc_add_order_item_meta( $item_id, '_product_id', $item->prodid );
+            wc_add_order_item_meta( $item_id, '_variation_id', null );
+
+            // @TODO: Check that we don't have the subtotal calculated somewhere.
+            $subtotal = $item->quantity * $item->price;
+            wc_add_order_item_meta( $item_id, '_line_subtotal', $subtotal );
+
+            // @TODO: Check this isn't pre-calculated.
+            wc_add_order_item_meta( $item_id, '_line_subtotal_tax', $subtotal+$item->tax_charged );
+            // @TODO: Check this isn't pre-calculated.
+            wc_add_order_item_meta( $item_id, '_line_total', $subtotal+$item->tax_charged );
+            wc_add_order_item_meta( $item_id, '_line_tax', $item->tax_charged );
+          }
+        }
+
+    }
 
     public static function convert_order_status($wpec_status) {
 
