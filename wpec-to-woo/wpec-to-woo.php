@@ -971,6 +971,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
           ");
         $extrainfo = $extrainfo[0];              
         update_post_meta( $post_id, '_payment_method', $extrainfo->gateway );
+
+        // @TODO: Fix these. They should not all be the same. 
         update_post_meta( $post_id, '_order_shipping', $extrainfo->base_shipping );
         update_post_meta( $post_id, '_order_discount', $extrainfo->base_shipping );
         update_post_meta( $post_id, '_cart_discount', $extrainfo->base_shipping );
