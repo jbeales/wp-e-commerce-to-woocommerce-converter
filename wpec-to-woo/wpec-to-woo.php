@@ -280,6 +280,10 @@ if (!class_exists("ralc_wpec_to_woo")) {
                 </div><!-- .table -->
 
               </div><!-- .inside -->
+
+              <div class="inside">
+                <p><strong>Note:</strong> If WP e-Commerce is currently deactivated then Products and Product Categories will show zero even if there are products and categories in the database.</p>
+              </div>
             </div><!-- .postbox -->
           </div><!-- .postbox-container -->
 
