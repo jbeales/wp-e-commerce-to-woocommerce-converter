@@ -845,7 +845,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
           'ping_status' => 'closed',
           'post_author' => $this->post_author,
           'post_parent' => '0',
-          'post_status' => 'publish',
+          'post_status' => self::convert_order_status($order['processed']),
           'post_title' => $post_title,
           'post_type' => 'shop_order' 
           );
@@ -967,27 +967,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
           'post_date_gmt' => date_i18n( 'Y-m-d H:i:s', $extrainfo->date, true ),
           ));
 
-        // order status
-        switch( $order['processed'] ){
-          case "1":
-            $status = 'failed';
-            break;
-          case "2":
-            $status = 'pending';
-            break;
-          case "3":
-          case "4":
-            $status = 'processing';
-            break;
-          case "5":
-            $status = 'completed';
-            break;
-          case "6":
-            $status = 'cancelled';
-            break;
-        }
-        wp_set_post_terms( $post_id, $status, 'shop_order_status' );
-
 
         // add to log
         $this->log['orders'][] = array(
@@ -997,6 +976,47 @@ if (!class_exists("ralc_wpec_to_woo")) {
         }
 
     }// END: update_orders()
+
+    public static function convert_order_status($wpec_status) {
+
+      // Default to pending. Means that no payment has been received, so nothing
+      // has to be done. This will only be used if a custom WPeC status is 
+      // encountered in the DB.
+      $woo_status = 'wc-pending';
+
+      switch( $wpec_status ) {
+        case 1:
+        case 6:
+          $woo_status = 'wc-failed';
+          break;
+
+        case 2:
+          $woo_status = 'wc-pending';
+          break;
+
+        case 3:
+        case 4:
+          $woo_status = 'wc-processing';
+          break;
+
+        case 5:
+          $woo_status = 'wc-completed';
+          break;
+
+        case 7:
+        case 8:
+        case 9:
+          $woo_status = 'wc-refunded';
+          break;
+
+      }
+
+      return $woo_status;
+
+
+
+
+    }
         
     public function delete_redundant_wpec_datbase_entries(){
       global $wpdb;
