@@ -977,7 +977,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_post_meta( $post_id, '_order_tax', $extrainfo->base_shipping );
         update_post_meta( $post_id, '_order_shipping_tax', $extrainfo->base_shipping );
         update_post_meta( $post_id, '_order_total', $extrainfo->totalprice );
-        update_post_meta( $post_id, '_order_key', uniqid( 'order_' ) );
+        update_post_meta( $post_id, '_order_key',  'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) ) );
         update_post_meta( $post_id, '_order_currency', "EUR" );
         update_post_meta( $post_id, '_prices_include_tax', "no" );
 
