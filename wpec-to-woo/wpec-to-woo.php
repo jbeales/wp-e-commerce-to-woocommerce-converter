@@ -957,19 +957,40 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
 
         $this->update_order_items( $post_id, $order );
+
+        $this->update_order_meata( $post_id, $order );
         
+        // add to log
+        $this->log['orders'][] = array(
+          'name' => $post_title
+          );
+
+        }
+
+    }// END: update_orders()
+
+
+    // @TODO: Incomplete.
+    protected function update_order_meta( $post_id, $wpec_order ) {
+
+          // wpec tables
+        $wpsc_purchase_logs_table = $wpdb->prefix . 'wpsc_purchase_logs';
+        $wpsc_submited_form_data_table = $wpdb->prefix . 'wpsc_submited_form_data';
+        $wpsc_checkout_forms_table = $wpdb->prefix . 'wpsc_checkout_forms';
+      
 
         /*
           ORDER DATA
         */
-        $extrainfo = $wpdb->get_results("
-          SELECT DISTINCT `" . $wpsc_purchase_logs_table . "` . * 
-          FROM `" . $wpsc_submited_form_data_table . "`
-          LEFT JOIN `" . $wpsc_purchase_logs_table . "`
-          ON `" . $wpsc_submited_form_data_table . "`.`log_id` = `" . $wpsc_purchase_logs_table . "`.`id`
-          WHERE `" . $wpsc_purchase_logs_table . "`.`id`=" . $order['id'] . "
-          ");
-        $extrainfo = $extrainfo[0];              
+        $extrainfo = $wpdb->get_row(  $wpdb->prepare("
+          SELECT DISTINCT `{$wpdb->prefix}wpsc_purchase_logs` . * 
+          FROM `{$wpdb->prefix}wpsc_submitted_form_data`
+          LEFT JOIN `{$wpdb->prefix}wpsc_purchase_logs`
+          ON `{$wpdb->prefix}wpsc_submitted_form_data`.`log_id` = `{$wpdb->prefix}wpsc_purchase_logs`.`id`
+          WHERE `{$wpdb->prefix}wpsc_purchase_logs`.`id`=%d
+          "), $wpec_order['id'] );
+
+
         update_post_meta( $post_id, '_payment_method', $extrainfo->gateway );
 
         // @TODO: Fix these. They should not all be the same. 
@@ -991,19 +1012,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
           ));
 
 
-        // add to log
-        $this->log['orders'][] = array(
-          'name' => $post_title
-          );
-
-        }
-
-    }// END: update_orders()
-
-    protected function update_order_meta( $post_id, $wpec_order ) {
-
-
-      //update_post_meta( $post_id, )
 
     }
 
