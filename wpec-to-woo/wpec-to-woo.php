@@ -893,15 +893,13 @@ if (!class_exists("ralc_wpec_to_woo")) {
           'post_parent' => '0',
           'post_status' => self::convert_order_status($order['processed']),
           'post_title' => $post_title,
-          'post_type' => 'shop_order' 
+          'post_type' => 'shop_order',
+          'post_date' => date_i18n( 'Y-m-d H:i:s', $order['date'] ),
+          'post_date_gmt' => date_i18n( 'Y-m-d H:i:s', $order['date'], true ),
           );
         // insert post
         $post_id = wp_insert_post( $post, true );
 
-        // wpec tables
-        $wpsc_purchase_logs_table = $wpdb->prefix . 'wpsc_purchase_logs';
-        $wpsc_submited_form_data_table = $wpdb->prefix . 'wpsc_submited_form_data';
-        $wpsc_checkout_forms_table = $wpdb->prefix . 'wpsc_checkout_forms';
 
         $this->update_order_contact_info( $post_id, $order);
 
@@ -1015,12 +1013,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_post_meta( $post_id, '_order_currency', "EUR" );
         update_post_meta( $post_id, '_prices_include_tax', "no" );
 
-        // order date
-        wp_update_post(array(
-          'ID' => $post_id,
-          'post_date' => date_i18n( 'Y-m-d H:i:s', $extrainfo->date ),
-          'post_date_gmt' => date_i18n( 'Y-m-d H:i:s', $extrainfo->date, true ),
-          ));
 
 
 
