@@ -22,6 +22,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
     var $default_billing_country = 'US';
     var $default_order_currency = 'USD';
 
+    var $taxes_included = false;
+
     public function __construct() { 
       //
     }
@@ -364,6 +366,14 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
       // Make get_metadata() work for WPeC's meta tables, even if WPeC is not activated.
       $this->enable_wpec_meta();
+
+      // Load the Taxes option.
+      $taxes = get_option('wpec_taxes_inprice');
+      if( 'exclusive' == $taxes ) {
+        $this->taxes_included = false;
+      } else {
+        $this->taxes_included = true;
+      }
       // just get the id of the first administrator in the database
     	$this->post_author = $wpdb->get_var( "SELECT ID FROM $wpdb->users;" );
     	$this->update_shop_settings();          
@@ -935,7 +945,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
         $this->update_order_items( $post_id, $order );
 
-        $this->update_order_meata( $post_id, $order );
+        $this->update_order_meta( $post_id, $order );
         
         // add to log
         $this->log['orders'][] = array(
@@ -1010,43 +1020,40 @@ if (!class_exists("ralc_wpec_to_woo")) {
     // @TODO: Incomplete.
     protected function update_order_meta( $post_id, $wpec_order ) {
 
-        
-        /*
-          ORDER DATA
-        */
-        $extrainfo = $wpdb->get_row(  $wpdb->prepare("
-          SELECT DISTINCT `{$wpdb->prefix}wpsc_purchase_logs` . * 
-          FROM `{$wpdb->prefix}wpsc_submitted_form_data`
-          LEFT JOIN `{$wpdb->prefix}wpsc_purchase_logs`
-          ON `{$wpdb->prefix}wpsc_submitted_form_data`.`log_id` = `{$wpdb->prefix}wpsc_purchase_logs`.`id`
-          WHERE `{$wpdb->prefix}wpsc_purchase_logs`.`id`=%d
-          "), $wpec_order['id'] );
-
-
+      
+        // Update values from $wpec_order;
+        update_post_meta( $post_id, '_payment_method', $wpec_order->gateway );
+        update_post_meta( $post_id, '_transaction_id', $wpec_order->transactid );
+        update_post_meta( $post_id, '_order_discount', $wpec_order->discount_value );
+        update_post_meta( $post_id, '_order_tax', $wpec_order->wpec_taxes_total );
+        update_post_meta( $post_id, '_order_total', $wpec_order->totalprice );
         
 
-        update_post_meta( $post_id, '_payment_method', $extrainfo->gateway );
+        // Update hardcoded or generated values.
+        update_post_meta( $post_id, '_order_currency', $this->default_order_currency );
         update_post_meta( $post_id, '_order_key',  'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) ) );
 
-        update_post_meta( $post_id, '_payment_method_title', '' );
-        update_post_meta( $post_id, '_transaction_id', '' );
-        
-        
-        update_post_meta( $post_id, '_order_currency', $this->default_order_currency );
-
-        update_post_meta( $post_id, '_prices_include_tax', '' );
-        update_post_meta( $post_id, '_order_shipping', '' );
-        update_post_meta( $post_id, '_order_discount', '' );
-        update_post_meta( $post_id, '_cart_discount', '' );
-        update_post_meta( $post_id, '_order_tax', '' );
-        update_post_meta( $post_id, '_order_shipping_tax', '' );
-        update_post_meta( $post_id, '_order_total', '' );
+        // Maybe there will be a way to add these in the future?
+        // update_post_meta( $post_id, '_cart_discount', '' );  // Don't see corresponding WPeC value.
+        // update_post_meta( $post_id, '_order_shipping_tax', '' ); // Don't see corresponding WPeC value.
         
 
-
-
-
-
+        // Update values stored in purchase meta
+        $order_meta = get_metadata( 'wpsc_purchase', $wpec_order->id );
+        if( !empty( $order_meta['gateway_name'] ) ) {
+          update_post_meta( $post_id, '_payment_method_title', $order_meta['gateway_name'][0] );
+        }
+        
+        if( !empty( $order_meta['total_shipping'] ) ) {
+          update_post_meta( $post_id, '_order_shipping', $order_meta['total_shipping'][0] ); 
+          // @TODO: fallback to $wpec_order->base_shipping if not available in meta.
+        } else {
+          update_post_meta( $post_id, '_order_shipping', $wpec_order->base_shipping );
+        }
+        
+        // Set the "Prices Include Tax" item based on the WPeC store setting.
+        update_post_meta( $post_id, '_prices_include_tax', ( $this->taxes_included ? 'yes' : 'no' ) );
+        
     }
 
     // @TODO: Incomplete.
