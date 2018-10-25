@@ -903,58 +903,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
         $wpsc_submited_form_data_table = $wpdb->prefix . 'wpsc_submited_form_data';
         $wpsc_checkout_forms_table = $wpdb->prefix . 'wpsc_checkout_forms';
 
-        /*
-          CUSTOMER DATA
-        */
-        $userinfo = $wpdb->get_results("
-          SELECT 
-          `" . $wpsc_submited_form_data_table . "`.`value`,
-          `" . $wpsc_checkout_forms_table . "`.`name`,
-          `" . $wpsc_checkout_forms_table . "`.`unique_name`
-          FROM `" . $wpsc_checkout_forms_table . "`
-          LEFT JOIN `" . $wpsc_submited_form_data_table . "`
-          ON `" . $wpsc_checkout_forms_table . "`.id = `" . $wpsc_submited_form_data_table . "`.`form_id`
-          WHERE `" . $wpsc_submited_form_data_table . "`.`log_id`=" . $order['id'] . "
-          ORDER BY `" . $wpsc_checkout_forms_table . "`.`checkout_order`
-          ", ARRAY_A );
-        foreach($userinfo as $info){
-          $userinfo[$info['unique_name']] = $info['value'];
-        }
-
-        // ID
-        update_post_meta( $post_id, '_customer_user', $order['user_ID'] );
-
-        // billing address
-        update_post_meta( $post_id, '_billing_first_name', $userinfo['billingfirstname'] );
-        update_post_meta( $post_id, '_billing_last_name', $userinfo['billinglastname'] );
-        update_post_meta( $post_id, '_billing_address_1', $userinfo['billingaddress'] );
-        update_post_meta( $post_id, '_billing_address_2', "" );
-        update_post_meta( $post_id, '_billing_city', $userinfo['billingcity'] );
-        update_post_meta( $post_id, '_billing_postcode', $userinfo['billingpostcode'] );
-        if( isset( $userinfo['billingcountry'])) {
-          update_post_meta( $post_id, '_billing_country', $userinfo['billingcountry'] );
-        } else {
-          update_post_meta( $post_id, '_billing_country', $this->default_billing_country );
-        }
-        
-        update_post_meta( $post_id, '_billing_email', $userinfo['billingemail'] );
-        update_post_meta( $post_id, '_billing_phone', $userinfo['billingphone'] );                
-
-        // shipping address
-        update_post_meta( $post_id, '_shipping_first_name', $userinfo['shippingfirstname'] );
-        update_post_meta( $post_id, '_shipping_last_name', $userinfo['shippinglastname'] );
-        update_post_meta( $post_id, '_shipping_company', "" );
-        update_post_meta( $post_id, '_shipping_address_1', $userinfo['shippingaddress'] );
-        update_post_meta( $post_id, '_shipping_address_2', "" );
-        update_post_meta( $post_id, '_shipping_city', $userinfo['shippingcity'] );
-        update_post_meta( $post_id, '_shipping_postcode', $userinfo['shippingpostcode'] );
-        if(isset($userinfo['shippingcountry'])) {
-          update_post_meta( $post_id, '_shipping_country', $userinfo['shippingcountry'] );
-        } else {
-          update_post_meta( $post_id, '_shipping_country', $this->default_shipping_country );
-        }
-        update_post_meta( $post_id, '_shipping_state', "" );
-
+        $this->update_order_contact_info( $post_id, $order);
 
         $this->update_order_items( $post_id, $order );
 
@@ -968,6 +917,68 @@ if (!class_exists("ralc_wpec_to_woo")) {
         }
 
     }// END: update_orders()
+
+    protected function update_order_contact_info( $post_id, $wpec_order ) {
+
+      global $wpdb;
+
+      
+
+      /*
+        CUSTOMER DATA
+      */
+      $userinfo = $wpdb->get_results( $wpdb->prepare("
+        SELECT 
+        `{$wpdb->previx}wpsc_submited_form_data`.`value`,
+        `{$wpdb->prefix}wpsc_checkout_forms`.`name`,
+        `{$wpdb->prefix}wpsc_checkout_forms`.`unique_name`
+        FROM `{$wpdb->prefix}wpsc_checkout_forms`
+        LEFT JOIN `{$wpdb->previx}wpsc_submited_form_data`
+        ON `{$wpdb->prefix}wpsc_checkout_forms`.id = `{$wpdb->previx}wpsc_submited_form_data`.`form_id`
+        WHERE `{$wpdb->previx}wpsc_submited_form_data`.`log_id`=%d
+        ORDER BY `{$wpdb->prefix}wpsc_checkout_forms`.`checkout_order`
+        ", $wpec_order['id'] ), ARRAY_A );
+
+
+      foreach($userinfo as $info){
+        $userinfo[$info['unique_name']] = $info['value'];
+      }
+
+      // ID
+      update_post_meta( $post_id, '_customer_user', $wpec_order['user_ID'] );
+
+      // billing address
+      update_post_meta( $post_id, '_billing_first_name', $userinfo['billingfirstname'] );
+      update_post_meta( $post_id, '_billing_last_name', $userinfo['billinglastname'] );
+      update_post_meta( $post_id, '_billing_address_1', $userinfo['billingaddress'] );
+      update_post_meta( $post_id, '_billing_address_2', "" );
+      update_post_meta( $post_id, '_billing_city', $userinfo['billingcity'] );
+      update_post_meta( $post_id, '_billing_postcode', $userinfo['billingpostcode'] );
+      if( isset( $userinfo['billingcountry'])) {
+        update_post_meta( $post_id, '_billing_country', $userinfo['billingcountry'] );
+      } else {
+        update_post_meta( $post_id, '_billing_country', $this->default_billing_country );
+      }
+      
+      update_post_meta( $post_id, '_billing_email', $userinfo['billingemail'] );
+      update_post_meta( $post_id, '_billing_phone', $userinfo['billingphone'] );                
+
+      // shipping address
+      update_post_meta( $post_id, '_shipping_first_name', $userinfo['shippingfirstname'] );
+      update_post_meta( $post_id, '_shipping_last_name', $userinfo['shippinglastname'] );
+      update_post_meta( $post_id, '_shipping_company', "" );
+      update_post_meta( $post_id, '_shipping_address_1', $userinfo['shippingaddress'] );
+      update_post_meta( $post_id, '_shipping_address_2', "" );
+      update_post_meta( $post_id, '_shipping_city', $userinfo['shippingcity'] );
+      update_post_meta( $post_id, '_shipping_postcode', $userinfo['shippingpostcode'] );
+      if(isset($userinfo['shippingcountry'])) {
+        update_post_meta( $post_id, '_shipping_country', $userinfo['shippingcountry'] );
+      } else {
+        update_post_meta( $post_id, '_shipping_country', $this->default_shipping_country );
+      }
+      update_post_meta( $post_id, '_shipping_state', "" );
+
+    }
 
 
     // @TODO: Incomplete.
