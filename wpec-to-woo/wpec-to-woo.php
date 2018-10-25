@@ -62,6 +62,32 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
 
     }
+
+    /**
+     * Adds WP e-Commerce Metadata table names to the $wpdb object so that WP's 
+     * get_metadata() works.
+     * 
+     * @return void
+     */
+    function enable_wpec_meta() {
+
+      global $wpdb;
+      
+      if( empty( $wpdb->wpsc_meta ) ) {
+        $wpdb->wpsc_meta                = $wpdb->prefix . 'wpsc_meta';
+      }
+      if( empty( $wpdb->wpsc_cart_itemmeta ) ) {
+        $wpdb->wpsc_cart_itemmeta       = $wpdb->prefix . 'wpsc_cart_item_meta';
+      }
+      if( empty( $wpdb->wpsc_purchasemeta ) ) {
+        $wpdb->wpsc_purchasemeta        = $wpdb->prefix . 'wpsc_purchase_meta';
+      
+      }
+      if( empty( $wpdb->wpsc_visitormeta ) ) {
+        $wpdb->wpsc_visitormeta         = $wpdb->prefix . 'wpsc_visitor_meta';
+      }
+    }
+
     
     public function plugin_menu() {
       $page = add_submenu_page( 'tools.php', 'wpec to woo', 'wpec to woo', 'manage_options', 'wpec-to-woo', array( $this, 'plugin_options' ) );
@@ -335,6 +361,9 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // Don't send E-mail by accident while converting. 
       // We don't want customers getting a bunch of E-mails!
       $this->disable_emails();
+
+      // Make get_metadata() work for WPeC's meta tables, even if WPeC is not activated.
+      $this->enable_wpec_meta();
       // just get the id of the first administrator in the database
     	$this->post_author = $wpdb->get_var( "SELECT ID FROM $wpdb->users;" );
     	$this->update_shop_settings();          
