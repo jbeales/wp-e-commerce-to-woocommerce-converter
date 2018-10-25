@@ -20,6 +20,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
     // Set defaults for Shipping & Billing country
     var $default_shipping_country = 'US';
     var $default_billing_country = 'US';
+    var $default_order_currency = 'USD';
 
     public function __construct() { 
       //
@@ -920,8 +921,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
       global $wpdb;
 
-      
-
       /*
         CUSTOMER DATA
       */
@@ -982,12 +981,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
     // @TODO: Incomplete.
     protected function update_order_meta( $post_id, $wpec_order ) {
 
-          // wpec tables
-        $wpsc_purchase_logs_table = $wpdb->prefix . 'wpsc_purchase_logs';
-        $wpsc_submited_form_data_table = $wpdb->prefix . 'wpsc_submited_form_data';
-        $wpsc_checkout_forms_table = $wpdb->prefix . 'wpsc_checkout_forms';
-      
-
+        
         /*
           ORDER DATA
         */
@@ -1000,21 +994,44 @@ if (!class_exists("ralc_wpec_to_woo")) {
           "), $wpec_order['id'] );
 
 
+        
+
         update_post_meta( $post_id, '_payment_method', $extrainfo->gateway );
-
-        // @TODO: Fix these. They should not all be the same. 
-        update_post_meta( $post_id, '_order_shipping', $extrainfo->base_shipping );
-        update_post_meta( $post_id, '_order_discount', $extrainfo->base_shipping );
-        update_post_meta( $post_id, '_cart_discount', $extrainfo->base_shipping );
-        update_post_meta( $post_id, '_order_tax', $extrainfo->base_shipping );
-        update_post_meta( $post_id, '_order_shipping_tax', $extrainfo->base_shipping );
-        update_post_meta( $post_id, '_order_total', $extrainfo->totalprice );
         update_post_meta( $post_id, '_order_key',  'wc_' . apply_filters( 'woocommerce_generate_order_key', uniqid( 'order_' ) ) );
-        update_post_meta( $post_id, '_order_currency', "EUR" );
-        update_post_meta( $post_id, '_prices_include_tax', "no" );
+
+        update_post_meta( $post_id, '_payment_method_title', '' );
+        update_post_meta( $post_id, '_transaction_id', '' );
+        
+        
+        update_post_meta( $post_id, '_order_currency', $this->default_order_currency );
+
+        update_post_meta( $post_id, '_prices_include_tax', '' );
+        update_post_meta( $post_id, '_order_shipping', '' );
+        update_post_meta( $post_id, '_order_discount', '' );
+        update_post_meta( $post_id, '_cart_discount', '' );
+        update_post_meta( $post_id, '_order_tax', '' );
+        update_post_meta( $post_id, '_order_shipping_tax', '' );
+        update_post_meta( $post_id, '_order_total', '' );
+        
 
 
 
+
+
+    }
+
+    // @TODO: Incomplete.
+    protected function update_order_authorize_net_info( $post_id, $wpec_order ) {
+
+      update_post_meta( $post_id, '_wc_authorize_net_aim_retry_amount', '0' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_id', '' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', '' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_environment', 'production' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_account_four', '' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_authorization_amount', '' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_authorization_code', '' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_charge_captured', '' );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_card_type', '' );
 
     }
 
