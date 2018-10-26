@@ -959,9 +959,12 @@ if (!class_exists("ralc_wpec_to_woo")) {
           break;
 
           case 'wpsc_merchant_paypal_express':
+            // It looks like nothing is stored anywhere other than purchlog table for PayPal Express
+            // Not even Transaction ID or Authcode exist in purchlog table.
           break;
 
           case 'wpsc_merchant_vmerchant':
+            // It looks like nothing is stored anywhere other than purchlog table for vmerchant.
           break;
         }
 
