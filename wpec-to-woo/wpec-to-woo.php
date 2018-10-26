@@ -726,10 +726,10 @@ if (!class_exists("ralc_wpec_to_woo")) {
         );
         $children = get_children( $args );
 
-        $has_variations[$id] = ! empty( $children );
+        $has_variations[$post_id] = ! empty( $children );
       }
 
-      return $has_variations[$id];
+      return $has_variations[$post_id];
     }
 
 
