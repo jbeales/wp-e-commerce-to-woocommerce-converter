@@ -490,7 +490,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $args = array( 
         'post_type' => $this->old_post_type, 
         'posts_per_page' => -1,
-        'post_status' => array('publish','pending','draft','auto-draft','future','private','trash')            
+        'post_status' => array('publish','inherit','pending','draft','auto-draft','future','private','trash')            
         );
       $products = new WP_Query( $args );
       $count = 0;
@@ -503,7 +503,15 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $count ++;
 
       // ______ POST TYPE ______
-      set_post_type( $post_id , 'product');                                  
+      // WPeC stores variations as posts of type 'wpsc-product' and a post_status of 'inherit'.
+      // Woo stores variations as a type of 'product_variation', and post_status of whatever the parent product's status is.
+      if( empty( $post->post_parent ) ) {
+        set_post_type( $post_id , 'product');  
+      } else {
+        $post->post_type = 'product_variation';
+        $post->post_status = get_post_status( $post->post_parent );
+        wp_update_post( $post );
+      }                                
       // ______________________________
 
 
@@ -550,10 +558,22 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // ______________________________
 
 
-      // ______ PRODUCT TYPE AND VISIBILITY ______
-      // setting all products to simple
-      $product_type = 'simple';
-      wp_set_object_terms($post_id, $product_type, 'product_type');
+      // ______ PRODUCT TYPE ______
+      // It looks like Woo doesn't store a product type for variations.
+      if( empty( $post->post_parent ) ) {
+
+        if( $this->wpec_product_has_variations( $post->ID ) ) {
+          $product_type = 'variable';
+        } else {
+          $product_type = 'simple';
+        }
+        wp_set_object_terms($post_id, $product_type, 'product_type');
+      }
+      
+      // ______________________________
+
+
+      // ______ VISIBILITY ______
       if( $stock_status == 'instock' ){
         $visibility = 'visible';
       }else{
@@ -677,6 +697,35 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     }// END: update_products
     
+
+    /**
+     * Utility function to find out if WPeC product has variations.
+     *
+     * Pretty much lifted directly from the WPeC function wpsc_product_has_variations();
+     * 
+     * @param  int $post_id The ID of the product we're checking for variations.
+     * @return bool          True if the product has variations. Fale if not.
+     */
+    public function wpec_product_has_variations( $post_id ) {
+      static $has_variations = array();
+
+
+      if ( ! isset( $has_variations[ $post_id ] ) ) {
+        $args = array(
+          'post_parent' => $post_id,
+          'post_type'   => 'wpsc-product',
+          'post_status' => array( 'inherit', 'publish' ),
+        );
+        $children = get_children( $args );
+
+        $has_variations[$id] = ! empty( $children );
+      }
+
+      return $has_variations[$id];
+    }
+
+
+
     /*
      * update category
      */
