@@ -448,12 +448,12 @@ if (!class_exists("ralc_wpec_to_woo")) {
                   </tr>
                   <tr>
                     <td><a href="post.php/<?php echo $coupon["link"] ?>"><?php echo $coupon["title"] ?></a></td>
-                    <td><?php echo $coupon["active"] ?></td>
-                    <?php if($coupon["conditions"] && $coupon["free-shipping"] ): ?>
+                    <td><?php echo (isset($coupon['active']) ? $coupon['active'] : '' ); ?></td>
+                    <?php if(isset($coupon["conditions"]) && $coupon["conditions"] && isset($coupon["free-shipping"]) && $coupon["free-shipping"] ): ?>
                     <td>This coupon was set to be in-active because it currently makes use of the conditions feature and the free shipping of wpec which is not supported by woocommerce</td>
-                    <?php elseif($coupon["conditions"]): ?>
+                    <?php elseif(isset($coupon["conditions"]) && $coupon["conditions"]): ?>
                     <td>This coupon was set to be in-active because it currently makes use of the conditions feature of wpec which is not supported by woocommerce</td>
-                    <?php elseif($coupon["free-shipping"]): ?>
+                    <?php elseif(isset($coupon["free-shipping"]) && $coupon["free-shipping"]): ?>
                     <td>This coupon was set to be in-active because it currently makes use of the free shipping feature of wpec which is not supported by woocommerce</td>
                     <?php endif; ?>
                   </tr>
