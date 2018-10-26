@@ -504,9 +504,10 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // wp-e stores all the featured products in one place
       $featured_products = get_option('sticky_products', false);
 
-      while ( $products->have_posts() ) : $products->the_post();
+      while ( $products->have_posts() ) : 
         set_time_limit(120);
-      $post_id = get_the_id();
+        $post = $products->next_post();
+      $post_id = $post->ID;
       $count ++;
 
       // ______ POST TYPE ______
