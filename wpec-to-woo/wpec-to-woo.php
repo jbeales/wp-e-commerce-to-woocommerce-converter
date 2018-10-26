@@ -934,6 +934,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
           'post_status' => self::convert_order_status($order['processed']),
           'post_title' => $post_title,
           'post_type' => 'shop_order',
+          'post_password' => uniqid( 'order_' ),
           'post_date' => date_i18n( 'Y-m-d H:i:s', $order['date'] ),
           'post_date_gmt' => date_i18n( 'Y-m-d H:i:s', $order['date'], true ),
           );
