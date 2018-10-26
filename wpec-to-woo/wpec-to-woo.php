@@ -523,7 +523,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $regular_price = get_post_meta($post_id, '_wpsc_price', true);
       update_post_meta($post_id, '_regular_price', $regular_price);               
       $sale_price = get_post_meta($post_id, '_wpsc_special_price', true);
-      if( $sale_price != '' && $sale_price != $regular_price ){
+      if( !empty($sale_price) && $sale_price != $regular_price ){
         update_post_meta($post_id, '_price', $sale_price);
         update_post_meta($post_id, '_sale_price', $sale_price);
       }else{
