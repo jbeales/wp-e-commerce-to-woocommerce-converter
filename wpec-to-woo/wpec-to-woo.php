@@ -946,6 +946,24 @@ if (!class_exists("ralc_wpec_to_woo")) {
         $this->update_order_items( $post_id, $order );
 
         $this->update_order_meta( $post_id, $order );
+
+
+        //
+        // wpec_auth_net
+        // wpsc_merchant_paypal_express
+        // wpsc_merchant_vmerchant
+        switch( $order->gateway ) {
+          case 'wpec_auth_net':
+            $this->update_wpec_auth_net();
+          break;
+
+          case 'wpsc_merchant_paypal_express':
+          break;
+
+          case 'wpsc_merchant_vmerchant':
+          break;
+        }
+
         
         // add to log
         $this->log['orders'][] = array(
@@ -1016,8 +1034,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     }
 
-
-    // @TODO: Incomplete.
     protected function update_order_meta( $post_id, $wpec_order ) {
 
       
@@ -1057,19 +1073,65 @@ if (!class_exists("ralc_wpec_to_woo")) {
     }
 
     // @TODO: Incomplete.
-    protected function update_order_authorize_net_info( $post_id, $wpec_order ) {
+    protected function update_wpec_auth_net( $post_id, $wpec_order ) {
 
-      update_post_meta( $post_id, '_wc_authorize_net_aim_retry_amount', '0' );
-      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_id', '' );
-      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', '' );
+      global $wpdb;
+
+      $transaction_id = $wpec_order->transactid;
+      $auth_code = $wpec_order->authcode;
+
+      
+
+      $authnet_meta_raw = $wpdb->get_var( 
+        $wpdb->prepare(
+          "SELECT meta_value FROM {$wpdb->wpsc_meta} WHERE object_id=%d AND meta_key='_wpsc_auth_net_status'", 
+          $wpec_order->id
+        )
+      );
+
+      $authnet_meta = maybe_unserialize( $authnet_meta_raw );
+      if( $authnet_meta ) {
+
+        if( !empty( $authnet_meta['status'] ) && $authnet_meta['status'] == 'AuthCapture' ) {
+          update_post_meta( $post_id, '_wc_authorize_net_aim_charge_captured', 'yes' );
+        }
+
+        $authnet_response = [];
+        if( !empty($authnet_meta['response'] ) ) {
+          $authnet_response = $authnet_meta['response'];
+        }
+
+        if( !empty( $authnet_response['card_type'] ) ) {
+          update_post_meta( $post_id, '_wc_authorize_net_aim_card_type', $authnet_response['card_type'] );
+        }
+
+        if( !empty( $authnet_response['account_number'] ) ) {
+          update_post_meta( $post_id, '_wc_authorize_net_aim_account_four', str_ireplace('X', '', $authnet_response['account_number']) );
+        }
+
+        if( !empty( $authnet_response['amount'] ) ) {
+          update_post_meta( $post_id, '_wc_authorize_net_aim_authorization_amount', $authnet_response['amount'] );
+        }
+
+        if( !empty( $authnet_response['authorization_code'] ) ) {
+          $auth_code = $authnet_response['authorization_code'];
+        }
+
+        if( !empty( $authnet_response['transaction_id'] ) ) {
+          $transaction_id = $authnet_response['transaction_id'];
+        }
+      }
+
+      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_id', $transaction_id );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_authorization_code', $auth_code );
+
+      
+      
+      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', date_i18n( 'Y-m-d H:i:s', $wpec_order->date, true ) );
       update_post_meta( $post_id, '_wc_authorize_net_aim_environment', 'production' );
-      update_post_meta( $post_id, '_wc_authorize_net_aim_account_four', '' );
-      update_post_meta( $post_id, '_wc_authorize_net_aim_authorization_amount', '' );
-      update_post_meta( $post_id, '_wc_authorize_net_aim_authorization_code', '' );
-      update_post_meta( $post_id, '_wc_authorize_net_aim_charge_captured', '' );
-      update_post_meta( $post_id, '_wc_authorize_net_aim_card_type', '' );
 
     }
+
 
     /**
      * Add items from the WPeC order to the new WooCommerce order.
