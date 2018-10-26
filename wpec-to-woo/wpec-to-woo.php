@@ -1044,13 +1044,13 @@ if (!class_exists("ralc_wpec_to_woo")) {
       */
       $userinfo = $wpdb->get_results( $wpdb->prepare("
         SELECT 
-        `{$wpdb->previx}wpsc_submited_form_data`.`value`,
+        `{$wpdb->prefix}wpsc_submited_form_data`.`value`,
         `{$wpdb->prefix}wpsc_checkout_forms`.`name`,
         `{$wpdb->prefix}wpsc_checkout_forms`.`unique_name`
         FROM `{$wpdb->prefix}wpsc_checkout_forms`
-        LEFT JOIN `{$wpdb->previx}wpsc_submited_form_data`
-        ON `{$wpdb->prefix}wpsc_checkout_forms`.id = `{$wpdb->previx}wpsc_submited_form_data`.`form_id`
-        WHERE `{$wpdb->previx}wpsc_submited_form_data`.`log_id`=%d
+        LEFT JOIN `{$wpdb->prefix}wpsc_submited_form_data`
+        ON `{$wpdb->prefix}wpsc_checkout_forms`.id = `{$wpdb->prefix}wpsc_submited_form_data`.`form_id`
+        WHERE `{$wpdb->prefix}wpsc_submited_form_data`.`log_id`=%d
         ORDER BY `{$wpdb->prefix}wpsc_checkout_forms`.`checkout_order`
         ", $wpec_order['id'] ), ARRAY_A );
 
