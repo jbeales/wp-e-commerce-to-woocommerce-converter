@@ -1012,7 +1012,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
         // wpsc_merchant_vmerchant
         switch( $order['gateway'] ) {
           case 'wpec_auth_net':
-            $this->update_wpec_auth_net();
+            $this->update_wpec_auth_net( $post_id, $order );
           break;
 
           case 'wpsc_merchant_paypal_express':
