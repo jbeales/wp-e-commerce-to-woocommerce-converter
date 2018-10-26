@@ -1010,7 +1010,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
         // wpec_auth_net
         // wpsc_merchant_paypal_express
         // wpsc_merchant_vmerchant
-        switch( $order->gateway ) {
+        switch( $order['gateway'] ) {
           case 'wpec_auth_net':
             $this->update_wpec_auth_net();
           break;
@@ -1099,11 +1099,11 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
       
         // Update values from $wpec_order;
-        update_post_meta( $post_id, '_payment_method', $wpec_order->gateway );
-        update_post_meta( $post_id, '_transaction_id', $wpec_order->transactid );
-        update_post_meta( $post_id, '_order_discount', $wpec_order->discount_value );
-        update_post_meta( $post_id, '_order_tax', $wpec_order->wpec_taxes_total );
-        update_post_meta( $post_id, '_order_total', $wpec_order->totalprice );
+        update_post_meta( $post_id, '_payment_method', $wpec_order['gateway'] );
+        update_post_meta( $post_id, '_transaction_id', $wpec_order['transactid'] );
+        update_post_meta( $post_id, '_order_discount', $wpec_order['discount_value'] );
+        update_post_meta( $post_id, '_order_tax', $wpec_order['wpec_taxes_total'] );
+        update_post_meta( $post_id, '_order_total', $wpec_order['totalprice'] );
         
 
         // Update hardcoded or generated values.
@@ -1116,16 +1116,15 @@ if (!class_exists("ralc_wpec_to_woo")) {
         
 
         // Update values stored in purchase meta
-        $order_meta = get_metadata( 'wpsc_purchase', $wpec_order->id );
+        $order_meta = get_metadata( 'wpsc_purchase', $wpec_order['id'] );
         if( !empty( $order_meta['gateway_name'] ) ) {
           update_post_meta( $post_id, '_payment_method_title', $order_meta['gateway_name'][0] );
         }
         
         if( !empty( $order_meta['total_shipping'] ) ) {
           update_post_meta( $post_id, '_order_shipping', $order_meta['total_shipping'][0] ); 
-          // @TODO: fallback to $wpec_order->base_shipping if not available in meta.
         } else {
-          update_post_meta( $post_id, '_order_shipping', $wpec_order->base_shipping );
+          update_post_meta( $post_id, '_order_shipping', $wpec_order['base_shipping'] );
         }
         
         // Set the "Prices Include Tax" item based on the WPeC store setting.
@@ -1138,15 +1137,15 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
       global $wpdb;
 
-      $transaction_id = $wpec_order->transactid;
-      $auth_code = $wpec_order->authcode;
+      $transaction_id = $wpec_order['transactid'];
+      $auth_code = $wpec_order['authcode'];
 
       
 
       $authnet_meta_raw = $wpdb->get_var( 
         $wpdb->prepare(
           "SELECT meta_value FROM {$wpdb->wpsc_meta} WHERE object_id=%d AND meta_key='_wpsc_auth_net_status'", 
-          $wpec_order->id
+          $wpec_order['id']
         )
       );
 
@@ -1188,7 +1187,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
       
       
-      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', date_i18n( 'Y-m-d H:i:s', $wpec_order->date, true ) );
+      update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', date_i18n( 'Y-m-d H:i:s', $wpec_order['date'], true ) );
       update_post_meta( $post_id, '_wc_authorize_net_aim_environment', 'production' );
 
     }
