@@ -656,13 +656,13 @@ if (!class_exists("ralc_wpec_to_woo")) {
         $dimensions_unit = "in";
         if( !empty( $dimensions ) && isset($dimensions['height_unit']) ) {
 
-          $dimentions_unit = $dimensions['height_unit'];
+          $dimensions_unit = $dimensions['height_unit'];
 
-          if( $dimentions_unit == "cm" || $dimentions_unit == "meter" ){
-            $dimentions_unit = "cm";
+          if( $dimensions_unit == "cm" || $dimensions_unit == "meter" ){
+            $dimensions_unit = "cm";
           }
         }
-        update_option( 'woocommerce_dimension_unit', $dimentions_unit );
+        update_option( 'woocommerce_dimension_unit', $dimensions_unit );
       }
 
 
