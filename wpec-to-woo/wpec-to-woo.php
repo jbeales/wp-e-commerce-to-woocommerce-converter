@@ -721,7 +721,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       if ( ! isset( $has_variations[ $post_id ] ) ) {
         $args = array(
           'post_parent' => $post_id,
-          'post_type'   => 'wpsc-product',
+          'post_type'   => 'product_variation',
           'post_status' => array( 'inherit', 'publish' ),
         );
         $children = get_children( $args );
