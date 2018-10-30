@@ -12,7 +12,7 @@ A Wordpress plugin to help migrating from WP E-Commerce to Woocommerce.
 
 - Make sure Woocommerce plugin is activated.
 
-- Go to `Tools > wpec to woo` and check the numbers
+- Go to `Tools > WPeC to Woo` and check the numbers
 
 - Click `Convert my store` and watch the magic happen
 

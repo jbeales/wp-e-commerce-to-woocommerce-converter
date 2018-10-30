@@ -99,7 +99,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     
     public function plugin_menu() {
-      $page = add_submenu_page( 'tools.php', 'wpec to woo', 'wpec to woo', 'manage_options', 'wpec-to-woo', array( $this, 'plugin_options' ) );
+      $page = add_submenu_page( 'tools.php', 'WPeC to WooCommerce', 'WPeC to Woo', 'manage_options', 'wpec-to-woo', array( $this, 'plugin_options' ) );
       add_action( 'admin_print_styles-' . $page, array( $this, 'admin_styles' ) );
 
       $help = '<p>The idea is you run this on a wordpress shop already setup with wp-e-commerce. Then this code will convert as much as it can into a woocommerce a shop. Make sure you have the Woocommerce plugin activated.</p>';
