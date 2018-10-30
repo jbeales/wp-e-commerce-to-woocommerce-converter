@@ -24,6 +24,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     var $taxes_included = false;
 
+    var $admin_page_identifier = '';
+
     public function __construct() { 
       //
     }
@@ -99,14 +101,29 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     
     public function plugin_menu() {
-      $page = add_submenu_page( 'tools.php', 'WPeC to WooCommerce', 'WPeC to Woo', 'manage_options', 'wpec-to-woo', array( $this, 'plugin_options' ) );
-      add_action( 'admin_print_styles-' . $page, array( $this, 'admin_styles' ) );
+      $this->admin_page_identifier = add_submenu_page( 'tools.php', 'WPeC to WooCommerce', 'WPeC to Woo', 'manage_options', 'wpec-to-woo', array( $this, 'plugin_options' ) );
 
-      $help = '<p>The idea is you run this on a wordpress shop already setup with wp-e-commerce. Then this code will convert as much as it can into a woocommerce a shop. Make sure you have the Woocommerce plugin activated.</p>';
-      $help .= '<p>Currently only converting products and categories, plan to try and convert the orders too. Because the sites i\'m writing this for don\'t have any variations on products i have not taken the time to work out a system for them. It also sets all products tax status to \'taxable\' and the tax class to \'standard\' regardless.</p>';          
-      $help .= '<p><b>One last caveat:</b> i\'m working with version:3.8.6 of wp-e-commerce, things may well have changed with the lastest version but the shops i need to convert are on this version and i\'m not interested in trying to upgrade them because of the many problems i have been having each time i upgrade the wp-e-commerce plugin. I\'ll test the plugin with the latest verion at a later date.</p>';
-      get_current_screen( $page, $help );
+      add_action( 'load-' . $this->admin_page_identifier, [ $this, 'show_contextual_help'] );
+
+      add_action( 'admin_print_styles-' . $this->admin_page_identifier, array( $this, 'admin_styles' ) );
+
+    
     }// END: plugin_menu
+
+    public function show_contextual_help() {
+      $help = '<p>The idea is you run this on a WordPress shop already setup with WP e-Commerce. Then this code will convert as much as it can into WooCommerce data. Make sure you have the WooCommerce plugin activated.</p>';
+      $help .= '<p>Currently converts products and categories, variations and orders. All products tax status will be set to to \'taxable\' and the tax class to \'standard\'.</p>';          
+      $help .= '<p><b>One last caveat:</b> This has been used with versions 3.8.6 and 3.13.1 of WP e-Commerce. It may work with other versions, and it may not. <b>TEST</b> on a development copy. <b>MAKE A BACKUP</b> before using this plugin; by nature it is destructive and the only way to recover from a failed migration will be your database backup.</p>';
+
+
+      $screen = get_current_screen();
+      $screen->add_help_tab( array(
+        'id'       => 'wpec-to-woo',
+        'title'    => __( 'WP e-Commerce to WooCommerce' ),
+        'content'  => $help
+      ));
+
+    }
     
     public function admin_styles() {
       wp_enqueue_style( 'wpec_to_woo_styles' );
