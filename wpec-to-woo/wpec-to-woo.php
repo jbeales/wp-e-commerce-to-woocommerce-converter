@@ -1251,6 +1251,15 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_post_meta( $post_id, '_order_discount', $wpec_order['discount_value'] );
         update_post_meta( $post_id, '_order_tax', $wpec_order['wpec_taxes_total'] );
         update_post_meta( $post_id, '_order_total', $wpec_order['totalprice'] );
+
+
+        // Save the "How did you find us?" response. Woo doesn't do anythign with this by default
+        // but this way it's there if we want to use it later. 
+        update_post_meta( $post_id, '_customer_source', $wpec_order['find_us'] );
+
+        // We'll also put it in an order note:
+        $current_wc_order->add_order_note( sprintf('Customer Source: %s', $wpec_order['find_us'] ) );
+
         
 
         // Update hardcoded or generated values.
