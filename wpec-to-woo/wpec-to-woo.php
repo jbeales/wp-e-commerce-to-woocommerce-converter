@@ -381,13 +381,22 @@ if (!class_exists("ralc_wpec_to_woo")) {
       } else {
         $this->taxes_included = true;
       }
+
       // just get the id of the first administrator in the database
     	$this->post_author = $wpdb->get_var( "SELECT ID FROM $wpdb->users;" );
-    	$this->update_shop_settings();          
+    	
+      $this->update_shop_settings();
+
+      $this->update_variations();
+
     	$this->update_products();
+
     	$this->update_categories(); 
+
     	$this->update_coupons();
-    	$this->update_orders();
+    	
+      $this->update_orders();
+
       // tags don't need to be updated as both wpec and woo use the same name for the taxonomy 'product_tag'
       // $this->delete_redundant_wpec_datbase_entries();         
     }// END: conversion
