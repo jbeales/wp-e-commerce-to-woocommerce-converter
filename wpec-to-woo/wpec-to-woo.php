@@ -1266,6 +1266,11 @@ if (!class_exists("ralc_wpec_to_woo")) {
         
         // Set the "Prices Include Tax" item based on the WPeC store setting.
         update_post_meta( $post_id, '_prices_include_tax', ( $this->taxes_included ? 'yes' : 'no' ) );
+
+        // If order is at least in an "accepted payment" state, record a payment date.
+        if( $wpec_order['processed'] > 2 ) {
+          update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', date_i18n( 'Y-m-d H:i:s', $wpec_order['date'], true ) );
+        }
         
     }
 
