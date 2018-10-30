@@ -137,7 +137,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
       if (!current_user_can('manage_options'))  {
         wp_die( __('You do not have sufficient permissions to access this page.') );
       }
-
       ?>
       <div class="wrap">
         <h2>Wp-e-commerce to woocommerce converter</h2>
@@ -412,7 +411,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     	$this->update_coupons();
     	
-      $this->update_orders();
+//      $this->update_orders();
 
       // tags don't need to be updated as both wpec and woo use the same name for the taxonomy 'product_tag'
       // $this->delete_redundant_wpec_datbase_entries();         
@@ -741,6 +740,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
       if( count( $attributes ) > 0 ) {
         update_post_meta( $post->ID, '_product_attributes', $attributes );  
       }
+
+      $this->update_product_attributes( $post->ID );
       
 
       // _____________________________________
@@ -858,6 +859,30 @@ if (!class_exists("ralc_wpec_to_woo")) {
       endwhile;
 
     }// END: update_products
+
+
+    protected function update_product_attributes( $post_id ) {
+
+        $postmeta = get_post_meta( $post_id );
+
+        $attributes = [];
+        foreach( $postmeta as $metakey => $metaval ) {
+          if(mb_strpos( $metakey, '_' ) !== 0 && mb_strpos( $metakey, 'five-star-rating-widget' ) === false ) {
+            $attr = [
+              'name' => $metakey,
+              'value' => $metaval[0],
+              'is_variation' => 0,
+              'is_taxonomy' => 0,
+              'is_visible' => 1,
+            ];
+            $attributes[ sanitize_title($attr['name']) ] = $attr;
+          }
+        }
+
+        $attributes = array_merge( get_post_meta( $post_id, '_product_attributes', true ), $attributes );
+
+        update_post_meta( $post_id, '_product_attributes', $attributes );
+    }
     
 
     /**
