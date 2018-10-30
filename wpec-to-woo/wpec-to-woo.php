@@ -489,6 +489,80 @@ if (!class_exists("ralc_wpec_to_woo")) {
   
   }
 
+
+    public function update_variations() {
+
+      global $wpdb;
+
+      $args = array(
+        'hierarchical' => true,
+        'show_in_rest' => true,
+        'rest_controller_class' => 'WPSC_REST_Variations_Controller',
+        'query_var'    => 'variations',
+        'rewrite'      => false,
+        'public'       => true,
+        'labels'       => []
+      );
+      $args = apply_filters( 'wpsc_register_taxonomies_product_variation_args', $args );
+      // Product Variations, is internally heirarchical, externally, two separate types of items, one containing the other
+      register_taxonomy( 'wpsc-variation', 'wpsc-product', $args );
+
+      // Get all variations.
+      $raw_variations = get_terms( [
+        'taxonomy' => 'wpsc-variation',
+        'hide_empty' => 0
+      ]);
+
+      $variations = [];
+      self::sort_terms_hierarchicaly($raw_variations, $variations);
+
+      foreach( $variations as $variation_group ) {
+   
+        
+        $attribute = wc_get_attribute(  wc_create_attribute( [ 'name' => $variation_group->name ] ) );
+
+        // temporarily register the new taxonomy so we can query it & update attributes later.
+        register_taxonomy( $attribute->slug, 'product', [] );
+
+        foreach( $variation_group->children as $attribute_value ) {
+          // update the old wpsc-variation to be a part of the new variation-based taxonomy and have no parent.
+          $update_query = $wpdb->prepare( 
+            "UPDATE {$wpdb->term_taxonomy} SET taxonomy=%s, parent=%d WHERE term_id=%d AND taxonomy=%s", 
+            $attribute->slug, 
+            0,
+            $attribute_value->term_id,
+            'wpsc-variation'
+          );
+          
+          $wpdb->query( $update_query );
+        }
+      }
+    }
+
+    /**
+     * Recursively sort an array of taxonomy terms hierarchically. Child categories will be
+     * placed under a 'children' member of their parent term.
+     *
+     * @see https://wordpress.stackexchange.com/a/99516/67684  (source of this function)
+     * @param Array   $cats     taxonomy term objects to sort
+     * @param Array   $into     result array to put them in
+     * @param integer $parentId the current parent ID to put them in
+     */
+    public static function sort_terms_hierarchicaly(Array &$cats, Array &$into, $parentId = 0)
+    {
+        foreach ($cats as $i => $cat) {
+            if ($cat->parent == $parentId) {
+                $into[$cat->term_id] = $cat;
+                unset($cats[$i]);
+            }
+        }
+
+        foreach ($into as $topCat) {
+            $topCat->children = array();
+            self::sort_terms_hierarchicaly($cats, $topCat->children, $topCat->term_id);
+        }
+    }
+
     /*
      * convert post type to woocommerce post type
      * update price field meta
@@ -503,6 +577,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $count = 0;
       // wp-e stores all the featured products in one place
       $featured_products = get_option('sticky_products', false);
+
+      $attribute_taxonomies  = wc_get_attribute_taxonomies();
 
       while ( $products->have_posts() ) : 
         set_time_limit(120);
@@ -590,6 +666,58 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // visibility
       update_post_meta($post_id, '_visibility', $visibility);
       // ______________________________
+      
+
+
+      // ______ ATTRIBUTES / VARIATIONS ______
+      $attributes = get_post_meta( $post->ID, '_product_attributes', true );
+      if( '' == $attributes ) {
+        $attributes = [];
+      }
+      // get any terms with from pa_* taxonomies.
+      foreach( $attribute_taxonomies as $tax ) {
+        $tax = wc_get_attribute( $tax->attribute_id );
+        if( !empty( $tax->slug ) ) {
+
+          // Get any terms from the $tax->slug taxonomy that apply to this product.
+          $terms = wp_get_post_terms( $post->ID, $tax->slug, [ 'fields' => 'slugs'] );
+
+          if( empty( $post->post_parent ) ) {
+            // Is a parent.
+            
+            // Check to make sure this variation actually applies to 
+            if( !empty($terms) ) {
+
+              // Before I do this, I need to see if this tax is actually connected to this product.
+              // Maybe check to see if there are _any_ terms from this tax attached to the product?
+              $attributes[ $tax->slug ] = [
+                'name' => $tax->slug,
+                'value' => '',
+                'position' => '',
+                'is_variation' => 1,
+                'is_taxonomy' => 1,
+                'is_visible' => 1
+              ];
+            }
+
+          } else {
+            // Is a variation
+            
+            if( count( $terms ) > 0 ) {
+              // From my understanding there *should* only be one term from each of these variation taxonomies on each product.
+              // For example, a T-shirt can't be both 'green' and 'red'.
+              update_post_meta( $post->ID, "attribute_{$tax->slug}", $terms[0]);
+            }
+          }
+        }
+      }
+
+      if( count( $attributes ) > 0 ) {
+        update_post_meta( $post->ID, '_product_attributes', $attributes );  
+      }
+      
+
+      // _____________________________________
 
 
       // ______ OTHER PRODUCT DATA ______
