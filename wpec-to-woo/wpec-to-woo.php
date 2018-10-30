@@ -1101,6 +1101,9 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $wpec_formdata_table = $wpdb->prefix . 'wpsc_submited_form_data';
 
       $order_data = $wpdb->get_results( "SELECT * FROM `" . $wpec_order_table . "`", ARRAY_A );
+
+      $current_wc_order = false;
+
       foreach ( (array)$order_data as $order ){
         
         set_time_limit(120);
@@ -1135,12 +1138,17 @@ if (!class_exists("ralc_wpec_to_woo")) {
         // insert post
         $post_id = wp_insert_post( $post, true );
 
+        $current_wc_order = wc_get_order(  $post_id );
 
-        $this->update_order_contact_info( $post_id, $order);
+        $current_wc_order->add_order_note( 'Imported from WP e-Commerce on ' . date_i18n( 'Y-m-d H:i:s') );
 
-        $this->update_order_items( $post_id, $order );
 
-        $this->update_order_meta( $post_id, $order );
+        // Refactor opportunity! These should all be part of their own object.
+        $this->update_order_contact_info( $post_id, $order, $current_wc_order );
+
+        $this->update_order_items( $post_id, $order, $current_wc_order );
+
+        $this->update_order_meta( $post_id, $order, $current_wc_order );
 
 
         //
@@ -1149,7 +1157,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
         // wpsc_merchant_vmerchant
         switch( $order['gateway'] ) {
           case 'wpec_auth_net':
-            $this->update_wpec_auth_net( $post_id, $order );
+            $this->update_wpec_auth_net( $post_id, $order, $current_wc_order );
           break;
 
           case 'wpsc_merchant_paypal_express':
@@ -1168,11 +1176,13 @@ if (!class_exists("ralc_wpec_to_woo")) {
           'name' => $post_title
           );
 
+
+        $current_wc_order = false;
         }
 
     }// END: update_orders()
 
-    protected function update_order_contact_info( $post_id, $wpec_order ) {
+    protected function update_order_contact_info( $post_id, $wpec_order, \WC_Order $current_wc_order ) {
 
       global $wpdb;
 
@@ -1232,7 +1242,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     }
 
-    protected function update_order_meta( $post_id, $wpec_order ) {
+    protected function update_order_meta( $post_id, $wpec_order, \WC_Order $current_wc_order ) {
 
       
         // Update values from $wpec_order;
@@ -1275,7 +1285,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
     }
 
     // @TODO: Incomplete.
-    protected function update_wpec_auth_net( $post_id, $wpec_order ) {
+    protected function update_wpec_auth_net( $post_id, $wpec_order, \WC_Order $current_wc_order ) {
 
       global $wpdb;
 
@@ -1303,12 +1313,16 @@ if (!class_exists("ralc_wpec_to_woo")) {
           $authnet_response = $authnet_meta['response'];
         }
 
+        $card_type = '';
         if( !empty( $authnet_response['card_type'] ) ) {
-          update_post_meta( $post_id, '_wc_authorize_net_aim_card_type', $authnet_response['card_type'] );
+          $card_type = $authnet_response['card_type'];
+          update_post_meta( $post_id, '_wc_authorize_net_aim_card_type', $card_type );
         }
 
+        $card_four = '';
         if( !empty( $authnet_response['account_number'] ) ) {
-          update_post_meta( $post_id, '_wc_authorize_net_aim_account_four', str_ireplace('X', '', $authnet_response['account_number']) );
+          $card_four = str_ireplace('X', '', $authnet_response['account_number']);
+          update_post_meta( $post_id, '_wc_authorize_net_aim_account_four', $card_four );
         }
 
         if( !empty( $authnet_response['amount'] ) ) {
@@ -1322,6 +1336,9 @@ if (!class_exists("ralc_wpec_to_woo")) {
         if( !empty( $authnet_response['transaction_id'] ) ) {
           $transaction_id = $authnet_response['transaction_id'];
         }
+
+        $note_pattern = "Paid by Authorize.Net AIM on %s:\n %s ending in %s.\n Transaction ID: %s. Auth Code: %s";
+        $current_wc_order->add_order_note( sprintf( $note_pattern, date_i18n( 'Y-m-d H:i:s', $wpec_order['date'], true ), $card_type, $card_four, $transaction_id, $auth_code ));
       }
 
       update_post_meta( $post_id, '_wc_authorize_net_aim_trans_id', $transaction_id );
@@ -1342,7 +1359,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
      * @param  array $wpec_order Corresponds to a row in the WPeC purchaselogs table.
      * @return void
      */
-    protected function update_order_items( $post_id, $wpec_order )  {
+    protected function update_order_items( $post_id, $wpec_order, \WC_Order $current_wc_order )  {
         global $wpdb;
 
         /*
