@@ -835,19 +835,41 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
       // ______ PRODUCT IMAGES ______
       /*
-      * if products have multiple images wpec puts those pictures into the post gallery
-      * because of this those pictures don't need to be ammended and should still be working
-      * we only need to update the featured image
-      * wpec uses the first one in the galley as the product image so we just have to set that as 
-      * the featured image
+      * 
+      * Since 3.8.14.2, and maybe earlier, WPeC stores a custom gallery in the 
+      * _wpsc_product_gallery postmeta.
+      *
+      * @TODO: Translate _wpsc_product_gallery to the WooCommerce gallery format.
+      *
+      * Older verions of WPeC just showed all image uploaded to a product as the
+      * product gallery.
+      *
+      * Recent version of WPeC also support Post Thumbnails as featured images
+      * - the same way WooCommerce does. So if there's already a thumbnail 
+      * we won't add a new one. If there is no thumbnail the first image in the 
+      * gallery, (if it exists), will be the Thumbnail, otherwise the first
+      * image attached to the product will be set as the Thumbnail.
+      * 
       */
-      $args = array( 'post_type' => 'attachment', 'numberposts' => 1, 'post_status' => null, 'post_parent' => $post_id, 'post_mime_type' => 'image' );
-      $attachments = get_posts($args);
-      if ($attachments) {
-        foreach ( $attachments as $attachment ) {
-          set_post_thumbnail( $post_id, $attachment->ID );
+     
+      if( !get_post_thumbnail_id( $post_id ) ) {
+
+        $thumbnail_id = 0;
+        $gallery = get_post_meta( $post_id, '_wpsc_product_gallery', true );
+        if( is_array( $gallery ) && !empty( $gallery ) ) {
+          $thumbnail_id = $gallery[0];
+        } else {
+          $gallery = get_attached_media('image', $post_id );
+          if( !empty( $gallery ) ) {
+            $thumbnail_id = $gallery[0]->ID;
+          }
+        }
+
+        if( !empty( $thumbnail_id ) ) {
+          set_post_thumbnail( $post_id, $thumbnail_id );
         }
       }
+      
       // ______________________________
 
       // add product to log
