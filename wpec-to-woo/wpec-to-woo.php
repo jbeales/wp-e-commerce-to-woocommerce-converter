@@ -1220,7 +1220,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
 
         // Refactor opportunity! These should all be part of their own object.
-        $this->update_order_contact_info( $post_id, $order, $current_wc_order );
+        $this->update_order_submitted_form_data( $post_id, $order, $current_wc_order );
 
         $this->update_order_items( $post_id, $order, $current_wc_order );
 
@@ -1267,7 +1267,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     }// END: update_orders()
 
-    protected function update_order_contact_info( $post_id, $wpec_order, \WC_Order $current_wc_order ) {
+    protected function update_order_submitted_form_data( $post_id, $wpec_order, \WC_Order $current_wc_order ) {
 
       global $wpdb;
 
@@ -1337,6 +1337,17 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_post_meta( $post_id, '_shipping_country', $this->default_shipping_country );
       }
       update_post_meta( $post_id, '_shipping_state', "" );
+
+      /**
+       * Action 'wpec_to_woo_update_order_submitted_form_data'
+       *
+       * @param int $post_id The post ID of the WooCommerce Order CPT created for this order.
+       * @param array $order Row from WPeC's Purchase Log table that is the source of the migrated order.
+       * @param \WC_Order $current_wc_order The WooCommerce order object that corresponds to $post_id.
+       * @param array $userinfo An array of data from the submitted_form_data table, with keys matching the unique name
+       *                        in the forms table.
+       */
+      do_action( 'wpec_to_woo_update_order_submitted_form_data', $post_id, $wpec_order, $current_wc_order, $userinfo );
 
     }
 
