@@ -872,6 +872,18 @@ if (!class_exists("ralc_wpec_to_woo")) {
       
       // ______________________________
 
+      /**
+       * Action wpec_to_woo_update_product
+       *
+       * Called on each individual product so store owners can add 
+       * implementation-specific migrations for their products.
+       *
+       * @param int $post_id The post ID of the product that has been updated.
+       * 
+       */
+      do_action( 'wpec_to_woo_update_product', $post_id );
+
+
       // add product to log
       $this->log["products"][] = array(
         "id" => $post_id, 
@@ -1242,7 +1254,16 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
 
         $current_wc_order = false;
-        }
+
+        /**
+         * Action 'wpec_to_woo_update_order' 
+         *
+         * @param int $post_id The ID of the new WooCommerce Order CPT that was created
+         * @param array $order Row from WPeC's Purchase Log table that is the source of the migrated order.
+         * @param \WC_Order $current_wc_order The WooCommerce order object that corresponds to $post_id.
+         */
+        do_action( 'wpec_to_woo_update_order', $post_id, $order, $current_wc_order );
+      }
 
     }// END: update_orders()
 
@@ -1354,6 +1375,16 @@ if (!class_exists("ralc_wpec_to_woo")) {
         if( $wpec_order['processed'] > 2 ) {
           update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', date_i18n( 'Y-m-d H:i:s', $wpec_order['date'], true ) );
         }
+
+        /**
+         * Action 'wpec_to_woo_update_order_meta'
+         *
+         * @param int $post_id The post ID of the WooCommerce Order CPT created for this order.
+         * @param array $order Row from WPeC's Purchase Log table that is the source of the migrated order.
+         * @param \WC_Order $current_wc_order The WooCommerce order object that corresponds to $post_id.
+         * @param array $order_meta WPeC's Order Metadata, corresponds to a row from the wpsc_purchase_meta table.
+         */
+        do_action( 'wpec_to_woo_update_order_meta', $post_id, $wpec_order, $current_wc_order, $order_meta );
         
     }
 
