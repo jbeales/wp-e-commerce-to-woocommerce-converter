@@ -31,6 +31,7 @@ Many shop settings will be lost in the process, it also sets all products tax st
 - There is no refund line item on refunded orders.
 - Backorder status may not be transferred properly.
 - Featured products may not be transferred properly.
+- Product galleries may not be transferred as expected on newer versions of WP e-Commerce.
 
 ## Notes:
 
