@@ -1287,8 +1287,21 @@ if (!class_exists("ralc_wpec_to_woo")) {
         ", $wpec_order['id'] ), ARRAY_A );
 
 
-      foreach($userinfo as $info){
-        $userinfo[$info['unique_name']] = $info['value'];
+      foreach( $userinfo as $info ) {
+        // Handle the possibility of multiple rows with the same unique_name.
+        if( isset( $userinfo[ $info['unique_name'] ] ) ) {
+          if( is_array( $userinfo[ $info['unique_name'] ] ) ) {
+            $userinfo[ $info['unique_name'] ][] = $info['value'];
+          } else {
+            $userinfo[ $info['unique_name'] ] = [
+              $userinfo[ $info['unique_name'] ],
+              $info['value']
+            ];
+          }
+        } else {
+          $userinfo[ $info['unique_name'] ] = $info['value'];
+        }
+        
       }
 
       // ID
