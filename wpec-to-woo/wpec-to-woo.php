@@ -437,8 +437,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
                   </tr>
                   <?php foreach( $this->log["products"] as $product ): ?>
                   <tr>
-                    <td><?php echo $product["id"] ?></td>
-                    <td><a href="post.php<?php echo $product["link"] ?>"><?php echo $product["title"] ?></a></td>
+                    <td><?php esc_html_e( $product["id"] ); ?></td>
+                    <td><a href="post.php<?php esc_attr_e( $product["link"] ); ?>"><?php esc_html_e( $product["title"] ); ?></a></td>
                   </tr>
                   <?php endforeach; ?>
                   <?php endif; ?>
@@ -449,7 +449,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
             <?php if( $this->log["categories"] ): ?>
             <div class="segment">
               <h4>Categories</h4>
-              <h5><?php echo $this->log["categories"]["updated"] ?> categories updated</h5>
+              <h5><?php esc_html_e( $this->log["categories"]["updated"] ); ?> categories updated</h5>
               <table>
                 <tbody>
                   <tr>
@@ -472,7 +472,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
                     <th>Notices</th>
                   </tr>
                   <tr>
-                    <td><a href="post.php/<?php echo $coupon["link"] ?>"><?php echo $coupon["title"] ?></a></td>
+                    <td><a href="post.php/<?php esc_attr_e( $coupon["link"] ); ?>"><?php esc_html_e( $coupon["title"] ); ?></a></td>
                     <td><?php echo (isset($coupon['active']) ? $coupon['active'] : '' ); ?></td>
                     <?php if(isset($coupon["conditions"]) && $coupon["conditions"] && isset($coupon["free-shipping"]) && $coupon["free-shipping"] ): ?>
                     <td>This coupon was set to be in-active because it currently makes use of the conditions feature and the free shipping of wpec which is not supported by woocommerce</td>
@@ -499,7 +499,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
                   </tr>
                   <?php foreach( $this->log["orders"] as $order ): ?>
                   <tr>
-                    <td><?php echo $order["name"] ?></td>
+                    <td><?php esc_html_e( $order["name"] ); ?></td>
                   </tr>
                   <?php endforeach; ?>
                 <?php endif; ?>
@@ -853,7 +853,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // add product to log
       $this->log["products"][] = array(
         "id" => $post_id, 
-        "title" => get_the_title(),
+        "title" => $post->post_title,
         "link" => "?post=". $post_id ."&action=edit"
         );
       endwhile;
