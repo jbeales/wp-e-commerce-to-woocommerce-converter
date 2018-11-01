@@ -32,6 +32,7 @@ Many shop settings will be lost in the process, it also sets all products tax st
 - Backorder status may not be transferred properly.
 - Featured products may not be transferred properly.
 - Product galleries may not be transferred as expected on newer versions of WP e-Commerce.
+- Order Taxes are very USA-centric.
 
 ## Notes:
 
@@ -42,3 +43,9 @@ Many shop settings will be lost in the process, it also sets all products tax st
 This has been tested on WP 4.8.9, using WPEC 3.13.1 and Woocommerce 3.4.7.
 
 Please let us know if you have any issues or requests.
+
+## Suggestions for future improvements
+
+- Operate more on WooCommerce objects, (WC_Product, WC_Order, etc), instead of the underlying WP data.
+- Improve handling of taxes on orders, (tax rates and tax totals on orders & items in orders).
+- Improve handling of product galleries.
