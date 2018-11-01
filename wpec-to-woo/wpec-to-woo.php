@@ -153,7 +153,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
         <form method="post" action="tools.php?page=wpec-to-woo">
           <input type="hidden" name="order" value="go_go_go" />
           <p>
-            <input type="checkbox" name="delete_orders" value="yes" checked="checked" />
+            <input type="checkbox" name="delete_orders" value="yes" />
             Delete all orders
           </p>
           <input class="button-primary" type="submit" value="Convert My Store" />
