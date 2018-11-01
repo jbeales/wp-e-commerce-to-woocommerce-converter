@@ -913,7 +913,12 @@ if (!class_exists("ralc_wpec_to_woo")) {
           }
         }
 
-        $attributes = array_merge( get_post_meta( $post_id, '_product_attributes', true ), $attributes );
+        $existing_attributes = get_post_meta( $post_id, '_product_attributes', true );
+        if( '' == $existing_attributes ) {
+          $existing_attributes = [];
+        }
+
+        $attributes = array_merge( $existing_attributes, $attributes );
 
         update_post_meta( $post_id, '_product_attributes', $attributes );
     }
