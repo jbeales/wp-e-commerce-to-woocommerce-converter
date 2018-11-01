@@ -1231,6 +1231,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
         $this->update_order_meta( $post_id, $order, $current_wc_order );
 
+        $this->update_order_taxes( $post_id, $order );
+
 
         //
         // wpec_auth_net
@@ -1364,7 +1366,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
         update_post_meta( $post_id, '_payment_method', $wpec_order['gateway'] );
         update_post_meta( $post_id, '_transaction_id', $wpec_order['transactid'] );
         update_post_meta( $post_id, '_order_discount', $wpec_order['discount_value'] );
-        update_post_meta( $post_id, '_order_tax', $wpec_order['wpec_taxes_total'] );
         update_post_meta( $post_id, '_order_total', $wpec_order['totalprice'] );
 
 
@@ -1416,6 +1417,34 @@ if (!class_exists("ralc_wpec_to_woo")) {
          */
         do_action( 'wpec_to_woo_update_order_meta', $post_id, $wpec_order, $current_wc_order, $order_meta );
         
+    }
+
+    protected function update_order_taxes( $post_id, $wpec_order ) {
+
+      update_post_meta( $post_id, '_order_tax', $wpec_order['wpec_taxes_total'] );
+
+
+      // Get a fresh copy of $current_wc_order from the DB.
+      $current_wc_order = wc_get_order( $post_id );
+
+      if( $wpec_order['wpec_taxes_total'] > 0 ) {
+        $item = new WC_Order_Item_Tax();
+
+        // Generate a woo-style tax code.
+        $code = [
+          get_post_meta( $post_id, '_shipping_country', true ),
+          get_post_meta( $post_id, '_shipping_state', true ),
+          'TAX ' . $wpec_order['wpec_taxes_rate'],
+          1
+        ];
+
+        $code = implode('-', $code );
+
+        $item->set_rate_code( $code );
+        $item->set_tax_total( $wpec_order['wpec_taxes_total'] );
+        $current_wc_order->add_item( $item );
+        $current_wc_order->save();
+      }
     }
 
     // @TODO: Incomplete.
