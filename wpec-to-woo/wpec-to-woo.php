@@ -411,7 +411,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     	$this->update_coupons();
     	
-//      $this->update_orders();
+      $this->update_orders();
 
       // tags don't need to be updated as both wpec and woo use the same name for the taxonomy 'product_tag'
       // $this->delete_redundant_wpec_datbase_entries();         
