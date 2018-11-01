@@ -139,7 +139,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       }
       ?>
       <div class="wrap">
-        <h2>Wp-e-commerce to woocommerce converter</h2>
+        <h2>WP e-Commerce to WooCommerce Converter</h2>
         <p>Use at your own risk!, still working on it, only use it on a test version of your site. Read the help for more information.</p>         
         <?php
         if( isset($_POST['delete_orders']) && $_POST['delete_orders'] == 'yes' ){
