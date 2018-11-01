@@ -1393,12 +1393,6 @@ if (!class_exists("ralc_wpec_to_woo")) {
           update_post_meta( $post_id, '_payment_method_title', $order_meta['gateway_name'][0] );
         }
         
-        if( !empty( $order_meta['total_shipping'] ) ) {
-          update_post_meta( $post_id, '_order_shipping', $order_meta['total_shipping'][0] ); 
-        } else {
-          update_post_meta( $post_id, '_order_shipping', $wpec_order['base_shipping'] );
-        }
-        
         // Set the "Prices Include Tax" item based on the WPeC store setting.
         update_post_meta( $post_id, '_prices_include_tax', ( $this->taxes_included ? 'yes' : 'no' ) );
 
@@ -1406,6 +1400,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
         if( $wpec_order['processed'] > 2 ) {
           update_post_meta( $post_id, '_wc_authorize_net_aim_trans_date', date_i18n( 'Y-m-d H:i:s', $wpec_order['date'], true ) );
         }
+
+        $this->update_order_shipping( $post_id, $wpec_order, $order_meta );
 
         /**
          * Action 'wpec_to_woo_update_order_meta'
@@ -1445,6 +1441,24 @@ if (!class_exists("ralc_wpec_to_woo")) {
         $current_wc_order->add_item( $item );
         $current_wc_order->save();
       }
+    }
+
+
+    protected function update_order_shipping( $post_id, $wpec_order, $order_meta ) {
+
+      if( !empty( $order_meta['total_shipping'] ) ) {
+        update_post_meta( $post_id, '_order_shipping', $order_meta['total_shipping'][0] ); 
+      } else {
+        update_post_meta( $post_id, '_order_shipping', $wpec_order['base_shipping'] );
+      }
+
+      $shipping_item = new WC_Order_Item_Shipping();
+      $shipping_item->set_method_title( $wpec_order['shipping_option'] );
+      $shipping_item->set_total( get_post_meta( $post_id, '_order_shipping', true ) );
+    
+      $order = wc_get_order( $post_id );
+      $order->add_item( $shipping_item );
+      $order->save();
     }
 
     // @TODO: Incomplete.
