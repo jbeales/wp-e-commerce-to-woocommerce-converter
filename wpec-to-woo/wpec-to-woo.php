@@ -1324,6 +1324,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       } else {
         update_post_meta( $post_id, '_billing_country', $this->default_billing_country );
       }
+      update_post_meta( $post_id, '_billing_state', $userinfo['billingstate'] );
       
       update_post_meta( $post_id, '_billing_email', $userinfo['billingemail'] );
       update_post_meta( $post_id, '_billing_phone', $userinfo['billingphone'] );                
@@ -1341,7 +1342,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       } else {
         update_post_meta( $post_id, '_shipping_country', $this->default_shipping_country );
       }
-      update_post_meta( $post_id, '_shipping_state', "" );
+      update_post_meta( $post_id, '_shipping_state', $userinfo['shippingstate'] );
 
       /**
        * Action 'wpec_to_woo_update_order_submitted_form_data'
