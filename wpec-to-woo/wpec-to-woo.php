@@ -950,6 +950,33 @@ if (!class_exists("ralc_wpec_to_woo")) {
       return $has_variations[$post_id];
     }
 
+    public static function get_state_from_wpec_id( $state_id ) {
+      
+      global $wpdb;
+      static $states = [];
+
+      // Sometimes $state_id is an array like ['US',43]
+      if( is_array( $state_id ) ) {
+        $state_id = $state_id[1];
+      }
+
+      if( !is_numeric( $state_id ) ) {
+        return $state_id;
+      }
+
+      $key = 's' . $state_id;
+      
+      if( !isset( $states[ $key ] ) ) {
+        $query = $wpdb->prepare( "SELECT code FROM {$wpdb->prefix}wpsc_region_tax  WHERE id=%d", $state_id );
+        $state = $wpdb->get_var( $query );
+      
+        if( ! is_wp_error( $state ) ) {
+          $states[ $key ] = $state;
+        }
+      }
+
+      return $states[ $key ];
+    }
 
 
     /*
@@ -1326,7 +1353,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       } else {
         update_post_meta( $post_id, '_billing_country', $this->default_billing_country );
       }
-      update_post_meta( $post_id, '_billing_state', $userinfo['billingstate'] );
+      update_post_meta( $post_id, '_billing_state', self::get_state_from_wpec_id( $userinfo['billingstate'] ) );
       
       update_post_meta( $post_id, '_billing_email', $userinfo['billingemail'] );
       update_post_meta( $post_id, '_billing_phone', $userinfo['billingphone'] );                
@@ -1344,7 +1371,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
       } else {
         update_post_meta( $post_id, '_shipping_country', $this->default_shipping_country );
       }
-      update_post_meta( $post_id, '_shipping_state', $userinfo['shippingstate'] );
+      
+      update_post_meta( $post_id, '_shipping_state', self::get_state_from_wpec_id( $userinfo['shippingstate'] ) );
 
       /**
        * Action 'wpec_to_woo_update_order_submitted_form_data'
@@ -1455,6 +1483,7 @@ if (!class_exists("ralc_wpec_to_woo")) {
       $shipping_item = new WC_Order_Item_Shipping();
       $shipping_item->set_method_title( $wpec_order['shipping_option'] );
       $shipping_item->set_total( get_post_meta( $post_id, '_order_shipping', true ) );
+
     
       $order = wc_get_order( $post_id );
       $order->add_item( $shipping_item );
