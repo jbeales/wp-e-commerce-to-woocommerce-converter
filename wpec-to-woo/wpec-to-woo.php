@@ -407,6 +407,8 @@ if (!class_exists("ralc_wpec_to_woo")) {
 
     	$this->update_products();
 
+      $this->update_menu_items();
+
     	$this->update_categories(); 
 
     	$this->update_coupons();
@@ -417,6 +419,15 @@ if (!class_exists("ralc_wpec_to_woo")) {
       // $this->delete_redundant_wpec_datbase_entries();         
     }// END: conversion
 
+
+    public function update_menu_items() {
+      global $wpdb;
+
+      $wpdb->query( "UPDATE {$wpdb->postmeta} SET meta_value='product' WHERE meta_key='_menu_item_object' AND meta_value='wpsc-product'" );
+
+    }
+
+    
     public function show_log(){
 ?>
       <div id="log" class="metabox-holder">
